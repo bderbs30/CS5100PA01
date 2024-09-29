@@ -4,7 +4,7 @@ import numpy as np
 
 # --------------------------------------------------- generate_neighbor function ------------------
 def generate_neighbor(
-    shapePos, currentShapeIndex, currentColorIndex, grid
+    shapePos, currentShapeIndex, currentColorIndex, grid, exponent, fill_threshold
 ):  # partially written by AI - mainly the weighting parts
 
     if grid is None:
@@ -16,21 +16,32 @@ def generate_neighbor(
     # ---------------------------------------------------
     num_shapes = len(shapes)
 
-    high_prob = 0.75  # Adjust this value to favor index 0 even more
-    remaining_prob = 1 - high_prob
-    num_other_shapes = num_shapes - 1
+    # ---------------------------------------------------
+    # Compute shape areas
+    # ---------------------------------------------------
+    shape_areas = []
+    for dims in shapesDims:
+        shape_width, shape_height = dims  # Ensure correct order
+        area = shape_width * shape_height
+        shape_areas.append(area)
 
-    # Assign weights to shapes
-    shape_weights = [high_prob] + [remaining_prob / num_other_shapes] * num_other_shapes
-
-    # Normalize shape_weights to ensure they sum to 1 (optional in this case)
-    total_weight_shapes = sum(shape_weights)
-    probabilities = [w / total_weight_shapes for w in shape_weights]
+    # ---------------------------------------------------
+    # Assign probabilities based on areas
+    # ---------------------------------------------------
+    probabilities = [(area**exponent) for area in shape_areas]
+    total_prob = sum(probabilities)
+    probabilities = [prob / total_prob for prob in probabilities]
 
     # ---------------------------------------------------
     # Select a new shape index using weighted random selection
     # ---------------------------------------------------
-    currentShapeIndex = np.random.choice(range(num_shapes), p=probabilities)
+    fill_level = get_fill_level(neighbor_grid)
+
+    # If the grid is almost full, select the shape with the smallest area
+    if fill_level >= fill_threshold:
+        currentShapeIndex = np.argmin(shape_areas)
+    else:
+        currentShapeIndex = np.random.choice(range(num_shapes), p=probabilities)
 
     # ---------------------------------------------------
     # Get valid moves and their weights
@@ -155,3 +166,11 @@ def update_shapePos(shapePos, move, grid_width, grid_height):  # written by AI
         print(f"Invalid move command: {move}")
 
     return [x, y]
+
+
+def get_fill_level(grid):
+
+    total_cells = grid.size
+    filled_cells = np.count_nonzero(grid != -1)  # Assuming -1 represents an empty cell
+    fill_level = filled_cells / total_cells
+    return fill_level

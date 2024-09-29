@@ -71,12 +71,21 @@ start = time.time()  # <- do not modify this.
 
 # implement simulated annealing algorithm
 
-T = 10000
+T = 1000
 d = 0.82
+initial_exponent = 1
+final_exponent = 0.1
+initial_temperature = T
+fill_threshold = 0.5
 
 while not done:
+    exponent = (
+        (initial_exponent - final_exponent) * (T / initial_temperature)
+    ) + final_exponent
 
-    neighbor = generate_neighbor(shapePos, currentShapeIndex, currentColorIndex, grid)
+    neighbor = generate_neighbor(
+        shapePos, currentShapeIndex, currentColorIndex, grid, exponent, fill_threshold
+    )
 
     # if the neighbor is better than the current state
     if energy(neighbor["gridState"]) <= energy(grid):
