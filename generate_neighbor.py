@@ -144,7 +144,7 @@ def get_valid_moves(
 
 
 # --------------------------------------------------- update_shapePos function ------------------
-def update_shapePos(shapePos, move, grid_width, grid_height):  # written by AI
+def update_shapePos(shapePos, move, grid_width, grid_height):
     x, y = shapePos
 
     # ---------------------------------------------------
@@ -171,6 +171,6 @@ def update_shapePos(shapePos, move, grid_width, grid_height):  # written by AI
 def get_fill_level(grid):
 
     total_cells = grid.size
-    filled_cells = np.count_nonzero(grid != -1)  # Assuming -1 represents an empty cell
+    filled_cells = np.count_nonzero(grid != -1)
     fill_level = filled_cells / total_cells
     return fill_level
