@@ -11,7 +11,8 @@ def energy(grid):
     if violations > 0:
         energy = float("inf")
 
-    return energy - colored_cells
+    energy = energy - colored_cells
+    return energy
 
 
 def count_colored_cells(grid):

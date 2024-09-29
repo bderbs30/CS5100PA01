@@ -18,7 +18,7 @@ from calculate_cost import *
 
 ##############################################################################################################################
 
-setup(GUI=False, render_delay_sec=0.01, gs=10)
+setup(GUI=True, render_delay_sec=0.000001, gs=10)
 
 
 ##############################################################################################################################
@@ -71,49 +71,74 @@ start = time.time()  # <- do not modify this.
 
 # implement simulated annealing algorithm
 
-# T = 1000
-# d = 0.82
+T = 10000
+d = 0.82
 
-# while not done:
+while not done:
 
-#     neighbor = generate_neighbor(shapePos, currentShapeIndex, currentColorIndex, grid)
+    neighbor = generate_neighbor(shapePos, currentShapeIndex, currentColorIndex, grid)
 
-#     if neighbor == None:
-#         continue
+    # if the neighbor is better than the current state
+    if energy(neighbor["gridState"]) <= energy(grid):
 
-#     # if the neighbor is better than the current state
-#     if energy(neighbor["gridState"]) <= energy(grid):
-#         execute(neighbor["move"])
+        shapePos, currentShapeIndex, currentColorIndex, grid, placedShapes, done = (
+            execute(neighbor["posMove"])
+        )
 
-#         if random(0, 1) <= math.exp((energy(grid) - energy(neighbor["gridState"])) / T):
-#             execute(neighbor["move"])
-#         else:
-#             continue
-#     T = T * d
+        while currentColorIndex != neighbor["neighborColorIndex"]:
+            shapePos, currentShapeIndex, currentColorIndex, grid, placedShapes, done = (
+                execute("switchcolor")
+            )
 
-grid_size = len(grid)
+        while currentShapeIndex != neighbor["neighborShapeIndex"]:
+            shapePos, currentShapeIndex, currentColorIndex, grid, placedShapes, done = (
+                execute("switchshape")
+            )
 
-for y in range(grid_size):
-    if y % 2 == 0:
-        # Even row: move right
-        for x in range(grid_size - 1):
-            execute("switchcolor")  # Change color
-            execute("place")  # Place shape
-            execute("right")
-            shapePos, _, _, _, _, _ = execute("export")
+        shapePos, currentShapeIndex, currentColorIndex, grid, placedShapes, done = (
+            execute("place")
+        )
+        shapePos, currentShapeIndex, currentColorIndex, grid, placedShapes, done = (
+            execute("export")
+        )
+
     else:
-        # Odd row: move left
-        for x in range(grid_size - 1):
-            execute("switchcolor")  # Change color
-            execute("place")  # Place shape
-            execute("left")
-            shapePos, _, _, _, _, _ = execute("export")
-    # At the end of each row, move down if not at the last row
-    if y < grid_size - 1:
-        execute("switchcolor")  # Change color
-        execute("place")  # Place shape
-        execute("down")
-        shapePos, _, _, _, _, _ = execute("export")
+        if random.random() <= math.exp(
+            (energy(grid) - energy(neighbor["gridState"])) / T
+        ):
+
+            shapePos, currentShapeIndex, currentColorIndex, grid, placedShapes, done = (
+                execute(neighbor["posMove"])
+            )
+            while currentColorIndex != neighbor["neighborColorIndex"]:
+                (
+                    shapePos,
+                    currentShapeIndex,
+                    currentColorIndex,
+                    grid,
+                    placedShapes,
+                    done,
+                ) = execute("switchcolor")
+
+            while currentShapeIndex != neighbor["neighborShapeIndex"]:
+                (
+                    shapePos,
+                    currentShapeIndex,
+                    currentColorIndex,
+                    grid,
+                    placedShapes,
+                    done,
+                ) = execute("switchshape")
+
+            shapePos, currentShapeIndex, currentColorIndex, grid, placedShapes, done = (
+                execute("place")
+            )
+
+        else:
+            continue
+    done = checkGrid(grid)
+
+    T = T * d
 
 
 ########################################
